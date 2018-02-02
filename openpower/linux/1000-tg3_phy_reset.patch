@@ -1,0 +1,26 @@
+DESC
+tg3: Fix rx hang on MTU change with 5717/5719
+EDESC
+This fixes a hang issue seen when changing the MTU size from 1500 MTU
+to 9000 MTU on both 5717 and 5719 chips. In discussion with Broadcom, they've indicated
+that these chipsets have the same phy as the 57766 chipset, so the same
+workarounds apply.
+
+Cc: stable<stable@vger.kernel.org>
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
+Index: linux-4.11.0-44.2.1.el7a.ppc64le/drivers/net/ethernet/broadcom/tg3.c
+===================================================================
+--- linux-4.11.0-44.2.1.el7a.ppc64le.orig/drivers/net/ethernet/broadcom/tg3.c
++++ linux-4.11.0-44.2.1.el7a.ppc64le/drivers/net/ethernet/broadcom/tg3.c
+@@ -14222,7 +14222,9 @@ static int tg3_change_mtu(struct net_dev
+ 	/* Reset PHY, otherwise the read DMA engine will be in a mode that
+ 	 * breaks all requests to 256 bytes.
+ 	 */
+-	if (tg3_asic_rev(tp) == ASIC_REV_57766)
++	if (tg3_asic_rev(tp) == ASIC_REV_57766 ||
++	    tg3_asic_rev(tp) == ASIC_REV_5717 ||
++	    tg3_asic_rev(tp) == ASIC_REV_5719)
+ 		reset_phy = true;
+ 
+ 	err = tg3_restart_hw(tp, reset_phy);

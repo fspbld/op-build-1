@@ -1,0 +1,54 @@
+Index: linux-4.11.0-44.2.1.el7a.ppc64le/drivers/net/ethernet/broadcom/tg3.c
+===================================================================
+--- linux-4.11.0-44.2.1.el7a.ppc64le.orig/drivers/net/ethernet/broadcom/tg3.c
++++ linux-4.11.0-44.2.1.el7a.ppc64le/drivers/net/ethernet/broadcom/tg3.c
+@@ -235,6 +235,10 @@ static int tg3_debug = -1;	/* -1 == use
+ module_param(tg3_debug, int, 0);
+ MODULE_PARM_DESC(tg3_debug, "Tigon3 bitmapped debugging message enable value");
+ 
++static int tg3_rx_rings = TG3_RSS_MAX_NUM_QS;	/* 4 == use TG3_RSS_MAX_NUM_QS as value */
++module_param(tg3_rx_rings, int, 0);
++MODULE_PARM_DESC(tg3_rx_rings, "Tigon3 number of rx rings (default: 4)");
++
+ #define TG3_DRV_DATA_FLAG_10_100_ONLY	0x0001
+ #define TG3_DRV_DATA_FLAG_5705_10_100	0x0002
+ 
+@@ -12560,8 +12564,8 @@ static int tg3_get_rxnfc(struct net_devi
+ 			info->data = tp->rxq_cnt;
+ 		else {
+ 			info->data = num_online_cpus();
+-			if (info->data > TG3_RSS_MAX_NUM_QS)
+-				info->data = TG3_RSS_MAX_NUM_QS;
++			if (info->data > tg3_rx_rings)
++				info->data = tg3_rx_rings;
+ 		}
+ 
+ 		return 0;
+@@ -16345,15 +16349,15 @@ static int tg3_get_invariants(struct tg3
+ 
+ 		if (tg3_flag(tp, 57765_PLUS)) {
+ 			tg3_flag_set(tp, SUPPORT_MSIX);
+-			tp->irq_max = TG3_IRQ_MAX_VECS;
++			tp->irq_max = tg3_rx_rings + 1;
+ 		}
+ 	}
+ 
+ 	tp->txq_max = 1;
+ 	tp->rxq_max = 1;
+ 	if (tp->irq_max > 1) {
+-		tp->rxq_max = TG3_RSS_MAX_NUM_QS;
+-		tg3_rss_init_dflt_indir_tbl(tp, TG3_RSS_MAX_NUM_QS);
++		tp->rxq_max = tg3_rx_rings;
++		tg3_rss_init_dflt_indir_tbl(tp, tg3_rx_rings);
+ 
+ 		if (tg3_asic_rev(tp) == ASIC_REV_5719 ||
+ 		    tg3_asic_rev(tp) == ASIC_REV_5720)
+@@ -17605,7 +17609,7 @@ static int tg3_init_one(struct pci_dev *
+ 
+ 	pci_set_master(pdev);
+ 
+-	dev = alloc_etherdev_mq(sizeof(*tp), TG3_IRQ_MAX_VECS);
++	dev = alloc_etherdev_mq(sizeof(*tp), tg3_rx_rings + 1);
+ 	if (!dev) {
+ 		err = -ENOMEM;
+ 		goto err_out_free_res;

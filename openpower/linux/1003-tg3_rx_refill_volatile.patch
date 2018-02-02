@@ -1,0 +1,13 @@
+Index: linux-4.11.0-44.2.1.el7a.ppc64le/drivers/net/ethernet/broadcom/tg3.h
+===================================================================
+--- linux-4.11.0-44.2.1.el7a.ppc64le.orig/drivers/net/ethernet/broadcom/tg3.h
++++ linux-4.11.0-44.2.1.el7a.ppc64le/drivers/net/ethernet/broadcom/tg3.h
+@@ -3197,7 +3197,7 @@ struct tg3 {
+ 	u32				rxq_req;
+ 	u32				rxq_cnt;
+ 	u32				rxq_max;
+-	bool				rx_refill;
++	volatile bool		rx_refill;
+ 
+ 
+ 	/* begin "everything else" cacheline(s) section */

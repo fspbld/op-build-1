@@ -1,0 +1,14 @@
+Index: linux-4.11.0-44.2.1.el7a.ppc64le/drivers/net/ethernet/broadcom/tg3.c
+===================================================================
+--- linux-4.11.0-44.2.1.el7a.ppc64le.orig/drivers/net/ethernet/broadcom/tg3.c
++++ linux-4.11.0-44.2.1.el7a.ppc64le/drivers/net/ethernet/broadcom/tg3.c
+@@ -7249,6 +7249,9 @@ static int tg3_poll_msix(struct napi_str
+ 			/* Reenable interrupts. */
+ 			tw32_mailbox(tnapi->int_mbox, tnapi->last_tag << 24);
+ 
++			/* Ensure store to enable interrupts occurs prior to checking rx_refill */
++			wmb();
++
+ 			/* This test here is synchronized by napi_schedule()
+ 			 * and napi_complete() to close the race condition.
+ 			 */
